@@ -42,3 +42,4 @@ for file_path in files:
         logger.error(f"Failed to ingest table {table_name}. Error: {e}")
 
 logger.info("All tables have been populated.")
+
