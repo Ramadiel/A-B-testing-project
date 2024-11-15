@@ -96,5 +96,3 @@ save_csv(landing_pages, "landing_pages.csv")
 save_csv(ab_testing, "ab_testing.csv")
 save_csv(results, "results.csv")
 
-
-
