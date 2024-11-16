@@ -1,0 +1,19 @@
+Logistic Regression Report:
+              precision    recall  f1-score   support
+
+           0       0.50      0.56      0.53         9
+           1       0.60      0.55      0.57        11
+
+    accuracy                           0.55        20
+   macro avg       0.55      0.55      0.55        20
+weighted avg       0.55      0.55      0.55        20
+
+Random Forest Report:
+              precision    recall  f1-score   support
+
+           0       0.29      0.22      0.25         9
+           1       0.46      0.55      0.50        11
+
+    accuracy                           0.40        20
+   macro avg       0.37      0.38      0.37        20
+weighted avg       0.38      0.40      0.39        20
