@@ -5,14 +5,17 @@ RUN apt-get update && apt-get install -y \
     libblas-dev liblapack-dev gfortran \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /etl
+WORKDIR /api
+
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
 
 COPY requirements.txt .
-
-RUN pip install --no-cache-dir --verbose -r requirements.txt
+RUN pip3 install --upgrade pip
+RUN pip install -r requirements.txt
 
 COPY . .
 
 EXPOSE 8000
 
-CMD ["python", "etl.py"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
