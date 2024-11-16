@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, BigInteger, Float, ForeignKey
+from sqlalchemy import Column, Integer, String, String, BigInteger, Float, ForeignKey, Sequence
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -8,9 +8,9 @@ class ABTesting(Base):
     __tablename__ = "ab_testing"
 
     test_id = Column(BigInteger, primary_key=True, index=True, autoincrement=True)
-    test_name = Column(Text, nullable=False)
-    start_date = Column(Text, nullable=False)
-    end_date = Column(Text, nullable=False)
+    test_name = Column(String, nullable=False)
+    start_date = Column(String, nullable=False)
+    end_date = Column(String, nullable=False)
     landing_page_id = Column(BigInteger, ForeignKey("landing_pages.landing_page_id"), nullable=False)
     product_id = Column(BigInteger, ForeignKey("products.product_id"), nullable=False)
 
@@ -18,20 +18,20 @@ class ABTesting(Base):
     product = relationship("Product", back_populates="ab_tests")
 
 
-class Customer(Base):
+class CustomerDB(Base):
     __tablename__ = "customers"
+    customer_id = Column(BigInteger, primary_key=True, index=True, nullable=False)
+    name = Column(String, index=True, nullable=False)
+    email = Column(String, unique=True, index=True, nullable=False)
 
-    customer_id = Column(BigInteger, primary_key=True, index=True, autoincrement=True)
-    name = Column(Text, nullable=False)
-    email = Column(Text, unique=True, index=True, nullable=False)
 
 
 class LandingPage(Base):
     __tablename__ = "landing_pages"
 
     landing_page_id = Column(BigInteger, primary_key=True, index=True, autoincrement=True)
-    variant_type = Column(Text, nullable=False)
-    page_url = Column(Text, nullable=False)
+    variant_type = Column(String, nullable=False)
+    page_url = Column(String, nullable=False)
     product_id = Column(BigInteger, ForeignKey("products.product_id"), nullable=False)
 
     product = relationship("Product", back_populates="landing_pages")
@@ -41,12 +41,12 @@ class LandingPage(Base):
 class Product(Base):
     __tablename__ = "products"
 
-    product_id = Column(BigInteger, primary_key=True, index=True, autoincrement=True)
-    product_name = Column(Text, nullable=False)
-    category = Column(Text, nullable=False)
-    description = Column(Text, nullable=True)
-    logo_url = Column(Text, nullable=True)
-    release_date = Column(Text, nullable=False)
+    product_id = Column(BigInteger, primary_key=True, index=True, nullable=False)
+    product_name = Column(String, nullable=False)
+    category = Column(String, nullable=False)
+    description = Column(String, nullable=True)
+    logo_url = Column(String, nullable=True)
+    release_date = Column(String, nullable=False)
 
     landing_pages = relationship("LandingPage", back_populates="product")
     ab_tests = relationship("ABTesting", back_populates="product")

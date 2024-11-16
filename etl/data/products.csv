@@ -1,4 +1,4 @@
-product_ID,product_name,category,description,logo_url,release_date
+product_id,product_name,category,description,logo_url,release_date
 1,Perfume Model 747,Electronics,Affordable Jacket,http://example.com/perfume_0.png,2022-06-29
 2,Blender Model 686,Fashion,High-quality Laptop,http://example.com/air_conditioner_1.png,2023-02-25
 3,Perfume Model 329,Sports,Energy-saving Air Conditioner,http://example.com/running_shoes_2.png,2022-04-21
