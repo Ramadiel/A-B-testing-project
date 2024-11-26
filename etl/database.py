@@ -8,7 +8,6 @@ import sqlalchemy.orm as orm
 from dotenv import load_dotenv
 import os
 
-# Load environment variables from .env file
 load_dotenv(".env")
 
 # Get the database URL from environment variables
