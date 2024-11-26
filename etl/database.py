@@ -25,9 +25,6 @@ SessionLocal = orm.sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Function to get a database session
 def get_db():
-    """
-    Function to get a database session.
-    """
     db = SessionLocal()
     try:
         yield db
@@ -37,9 +34,6 @@ def get_db():
 
 # Create all tables
 def init_db():
-    """
-    Function initialize the database.
-    """
     Base.metadata.create_all(bind=engine)
 
 if __name__ == "__main__":

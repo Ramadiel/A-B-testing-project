@@ -62,16 +62,3 @@ class Result(Base):
     test_id = Column(BigInteger, ForeignKey("ab_testing.test_id"), nullable=False)
 
     ab_test = relationship("ABTesting")
-
-
-class MissingResults(Base):
-    __tablename__ = "missing_results"
-
-    missing_results_id = Column(BigInteger, primary_key=True, index=True, autoincrement=True)
-    reason_missing = Column(Text, nullable=False)
-    date_logged = Column(String, nullable=False)
-    test_id = Column(BigInteger, ForeignKey("ab_testing.test_id"), nullable=False)
-    results_id = Column(BigInteger, ForeignKey("results.results_id"), nullable=False)
-
-    ab_test = relationship("ABTesting")
-    result = relationship("Result")

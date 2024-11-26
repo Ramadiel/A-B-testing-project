@@ -1,20 +1,3 @@
-"""
-ETL Module
-
-This module is responsible for extracting data from CSV files and loading it into a database. It leverages `pandas` for data manipulation, 
-`sqlalchemy` for database interactions, and `loguru` for logging activities.
-
-Functions:
-    - load_csv_to_table(table_name, csv_path): Load a CSV file into a specified database table.
-    - main(): Main execution process for batch loading multiple CSV files.
-
-Dependencies:
-    - pandas: Used for handling CSV file data.
-    - sqlalchemy: Used for database connection and table interaction.
-    - loguru: Used for logging information and errors.
-"""
-
-
 # Import necessary modules
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -30,18 +13,11 @@ def load_csv_to_table(table_name, csv_path):
     Load data from a CSV file into a database table.
 
     Args:
-        table_name (str): The name of the database table where data will be inserted.
-        csv_path (str): Path to the CSV file containing the data.
+    - table_name: Name of the database table.
+    - csv_path: Path to the CSV file containing data.
 
     Returns:
-        None
-
-    Exceptions:
-        Logs any exceptions that occur during the data loading process.
-    
-    Usage:
-        >>> load_csv_to_table("users", "data/users.csv")
-        INFO: Loaded data for table users from data/users.csv
+    - None
     """
     # Read the CSV file into a DataFrame
     df = pd.read_csv(csv_path)
@@ -57,10 +33,7 @@ files = glob.glob(folder_path)
 
 # Extract table names from CSV file names and load each file into its respective table
 for file_path in files:
-    """
-    For each CSV file in the specified folder, extract the base name (used as the table name)
-    and attempt to load the data into the corresponding database table.
-    """    
+    # Extract the base name of the file without the extension to use as the table name
     table_name = path.splitext(path.basename(file_path))[0]
     try:
         # Load the CSV data into the table
