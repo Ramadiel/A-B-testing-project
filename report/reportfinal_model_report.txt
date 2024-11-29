@@ -1,0 +1,11 @@
+Final Model Report (Random Forest):
+              precision    recall  f1-score   support
+
+           0       0.98      1.00      0.99       140
+           1       1.00      0.98      0.99       160
+
+    accuracy                           0.99       300
+   macro avg       0.99      0.99      0.99       300
+weighted avg       0.99      0.99      0.99       300
+
+Final Model Accuracy: 0.99
