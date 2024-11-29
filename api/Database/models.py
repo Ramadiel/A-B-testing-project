@@ -1,14 +1,15 @@
-from pydantic import BaseModel
-from sqlalchemy import create_engine, Column, Integer, String, Float, BigInteger, Sequence
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
-from sqlalchemy import Column, Integer, String, Float, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, BigInteger, ForeignKey
+from sqlalchemy.ext.declarative import declarative_base 
 from sqlalchemy.orm import relationship
 from .database import Base
 
 Base = declarative_base()
 
 class ABTestingDB(Base):
+    """
+    Database model for A/B testing information.
+    Represents the details of tests performed for landing pages and products.
+    """
     __tablename__ = "ab_testing"
 
     test_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -21,14 +22,25 @@ class ABTestingDB(Base):
     # Relationships
     landing_page = relationship("LandingPageDB", back_populates="ab_tests")
     product = relationship("ProductDB", back_populates="ab_tests")
+    results = relationship("ResultDB", back_populates="ab_test", cascade="all, delete")
+
 
 class CustomerDB(Base):
+    """
+    Database model for customers.
+    Stores information such as customer ID, name, and email.
+    """
     __tablename__ = "customers"
     customer_id = Column(BigInteger, primary_key=True, index=True, nullable=False)
     name = Column(String, index=True, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
 
+
 class LandingPageDB(Base):
+    """
+    Database model for landing pages.
+    Contains variant type, page URL, and associations with products and A/B tests.
+    """
     __tablename__ = "landing_pages"
 
     landing_page_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -40,7 +52,12 @@ class LandingPageDB(Base):
     product = relationship("ProductDB", back_populates="landing_pages")
     ab_tests = relationship("ABTestingDB", back_populates="landing_page", cascade="all, delete")
 
+
 class ProductDB(Base):
+    """
+    Database model for products.
+    Stores product details such as name, category, description, logo, and release date.
+    """
     __tablename__ = "products"
 
     product_id = Column(BigInteger, primary_key=True, index=True, nullable=False)
@@ -54,7 +71,12 @@ class ProductDB(Base):
     landing_pages = relationship("LandingPageDB", back_populates="product", cascade="all, delete")
     ab_tests = relationship("ABTestingDB", back_populates="product", cascade="all, delete")
 
+
 class ResultDB(Base):
+    """
+    Database model for test results.
+    Stores metrics like click-through rate, conversion rate, and bounce rate for A/B tests.
+    """
     __tablename__ = "results"
 
     results_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -65,5 +87,3 @@ class ResultDB(Base):
 
     # Relationships
     ab_test = relationship("ABTestingDB", back_populates="results")
-
-ABTestingDB.results = relationship("ResultDB", back_populates="ab_test", cascade="all, delete")
