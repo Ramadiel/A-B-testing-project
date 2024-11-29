@@ -25,7 +25,7 @@ import glob
 from os import path
 
 # Define a function to load CSV data into a database table
-def load_csv_to_table(table_name, csv_path):
+def load_csv_to_table(table_name: str, csv_path: str) -> None:
     """
     Load data from a CSV file into a database table.
 
@@ -37,7 +37,8 @@ def load_csv_to_table(table_name, csv_path):
         None
 
     Exceptions:
-        Logs any exceptions that occur during the data loading process.
+        :raises ValueError: If the CSV file cannot be read or the data cannot be loaded into the database.
+        :raises SQLAlchemyError: If a database connection or query fails.
     
     Usage:
         >>> load_csv_to_table("users", "data/users.csv")
