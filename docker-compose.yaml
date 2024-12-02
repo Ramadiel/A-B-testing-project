@@ -36,12 +36,12 @@ services:
   etl:
     container_name: etl
     build:
-      context: ./etl
+      context: ./project/etl
       dockerfile: Dockerfile
     ports:
       - 3000:3000
     volumes:
-        - ./etl:/etl
+        - ./project/etl:/etl
     depends_on: 
       db:
         condition: service_healthy
@@ -51,10 +51,10 @@ services:
   # FastAPI Backend Service
   api:
     build:
-      context: ./api
+      context: ./project/api
       dockerfile: Dockerfile
     volumes:
-      - ./api:/api
+      - ./project/api:/api
     ports:
       - 8008:8000
     environment:
@@ -65,10 +65,10 @@ services:
   app:
     container_name: streamlit_app
     build:
-      context: ./app
+      context: ./project/app
       dockerfile: Dockerfile
     volumes:
-      - ./app:/app
+      - ./project/app:/app
     ports:
       - 8501:8501
     environment:
