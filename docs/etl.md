@@ -1,1 +1,1 @@
-::: myapp.etl.etl
+::: project.etl.etl
