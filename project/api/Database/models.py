@@ -1,3 +1,14 @@
+"""
+Database Models for the ETL Process.
+
+This module defines the database models using SQLAlchemy for ABtesting, Customers, products and Landing pages.
+
+Modules:
+    - sqlalchemy: For ORM and database schema definition.
+    - pydantic: For data validation (not used in these models).
+"""
+
+
 from sqlalchemy import Column, Integer, String, Float, BigInteger, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base 
 from sqlalchemy.orm import relationship

@@ -1,17 +1,18 @@
 from sqlalchemy.orm import Session
 from fastapi import FastAPI, Depends, HTTPException
-from typing import List
-from Database.models import CustomerDB, ProductDB, ABTestingDB, ResultDB, Base
-from Database.schemas import (Customer, CustomerCreate, CustomerUpdate, Product, ProductCreate, ProductUpdate,
-                              ABTest, ABTestCreate, ABTestUpdate, Result, ResultCreate, ResultUpdate)
+from typing import List, Dict
+from Database.models import CustomerDB, ProductDB, ABTestingDB, ResultDB
+from Database.schemas import (
+    Customer, CustomerCreate, CustomerUpdate, Product, ProductCreate, ProductUpdate,
+    ABTest, ABTestCreate, ABTestUpdate, Result, ResultCreate, ResultUpdate
+)
 from Database.database import get_db
 
 app = FastAPI()
 
-
 # --- Customer Endpoints ---
 @app.get("/customers/{customer_id}", response_model=Customer)
-async def get_customer(customer_id: int, db: Session = Depends(get_db)):
+async def get_customer(customer_id: int, db: Session = Depends(get_db)) -> Customer:
     """
     Retrieve a specific customer by their ID.
 
@@ -31,7 +32,7 @@ async def get_customer(customer_id: int, db: Session = Depends(get_db)):
     return customer
 
 @app.post("/customers/", response_model=Customer)
-async def create_customer(customer: CustomerCreate, db: Session = Depends(get_db)):
+async def create_customer(customer: CustomerCreate, db: Session = Depends(get_db)) -> Customer:
     """
     Create a new customer record.
 
@@ -57,7 +58,7 @@ async def create_customer(customer: CustomerCreate, db: Session = Depends(get_db
     return new_customer
 
 @app.put("/customers/{customer_id}", response_model=Customer)
-async def update_customer(customer_id: int, customer: CustomerUpdate, db: Session = Depends(get_db)):
+async def update_customer(customer_id: int, customer: CustomerUpdate, db: Session = Depends(get_db)) -> Customer:
     """
     Update an existing customer's details.
 
@@ -84,7 +85,7 @@ async def update_customer(customer_id: int, customer: CustomerUpdate, db: Sessio
     return existing_customer
 
 @app.delete("/customers/{customer_id}")
-async def delete_customer(customer_id: int, db: Session = Depends(get_db)):
+async def delete_customer(customer_id: int, db: Session = Depends(get_db)) -> Dict[str, str]:
     """
     Delete a customer by their ID.
 
@@ -106,7 +107,7 @@ async def delete_customer(customer_id: int, db: Session = Depends(get_db)):
     return {"message": "Customer deleted successfully"}
 
 @app.get("/customers/", response_model=List[Customer])
-async def get_all_customers(db: Session = Depends(get_db)):
+async def get_all_customers(db: Session = Depends(get_db)) -> List[Customer]:
     """
     Retrieve a list of all customers in the database.
 
@@ -119,10 +120,9 @@ async def get_all_customers(db: Session = Depends(get_db)):
     customers = db.query(CustomerDB).all()
     return customers
 
-
 # --- Product Endpoints ---
 @app.get("/products/{product_id}", response_model=Product)
-async def get_product(product_id: int, db: Session = Depends(get_db)):
+async def get_product(product_id: int, db: Session = Depends(get_db)) -> Product:
     """
     Retrieve a specific product by its ID.
 
@@ -142,7 +142,7 @@ async def get_product(product_id: int, db: Session = Depends(get_db)):
     return product
 
 @app.post("/products/", response_model=Product)
-async def create_product(product: ProductCreate, db: Session = Depends(get_db)):
+async def create_product(product: ProductCreate, db: Session = Depends(get_db)) -> Product:
     """
     Create a new product record.
 
@@ -171,7 +171,7 @@ async def create_product(product: ProductCreate, db: Session = Depends(get_db)):
     return new_product
 
 @app.put("/products/{product_id}", response_model=Product)
-async def update_product(product_id: int, product: ProductUpdate, db: Session = Depends(get_db)):
+async def update_product(product_id: int, product: ProductUpdate, db: Session = Depends(get_db)) -> Product:
     """
     Update an existing product's details.
 
@@ -204,7 +204,7 @@ async def update_product(product_id: int, product: ProductUpdate, db: Session = 
     return existing_product
 
 @app.delete("/products/{product_id}")
-async def delete_product(product_id: int, db: Session = Depends(get_db)):
+async def delete_product(product_id: int, db: Session = Depends(get_db)) -> Dict[str, str]:
     """
     Delete a product by its ID.
 
@@ -226,7 +226,7 @@ async def delete_product(product_id: int, db: Session = Depends(get_db)):
     return {"message": "Product deleted successfully"}
 
 @app.get("/products/", response_model=List[Product])
-async def get_all_products(db: Session = Depends(get_db)):
+async def get_all_products(db: Session = Depends(get_db)) -> List[Product]:
     """
     Retrieve a list of all products in the database.
 
@@ -239,19 +239,21 @@ async def get_all_products(db: Session = Depends(get_db)):
     products = db.query(ProductDB).all()
     return products
 
-
 # --- AB Testing Endpoints ---
 @app.get("/abtests/{test_id}", response_model=ABTest)
-async def get_ab_test(test_id: int, db: Session = Depends(get_db)):
+async def get_ab_test(test_id: int, db: Session = Depends(get_db)) -> ABTest:
     """
     Retrieve an AB test by its ID.
 
     Args:
-        id (int): The ID of the AB test.
+        test_id (int): The ID of the AB test.
         db (Session): Database session dependency to query the database.
 
     Returns:
         ABTest: The AB test record.
+
+    Raises:
+        HTTPException: If the AB test is not found.
     """
     ab_test = db.query(ABTestingDB).filter(ABTestingDB.test_id == test_id).first()
     if ab_test is None:
@@ -259,9 +261,16 @@ async def get_ab_test(test_id: int, db: Session = Depends(get_db)):
     return ab_test
 
 @app.post("/abtests/", response_model=ABTest)
-async def create_ab_test(ab_test: ABTestCreate, db: Session = Depends(get_db)):
+async def create_ab_test(ab_test: ABTestCreate, db: Session = Depends(get_db)) -> ABTest:
     """
     Create a new A/B test in the database, manually assigning an ID.
+
+    Args:
+        ab_test (ABTestCreate): The details of the A/B test to create.
+        db (Session): Database session dependency.
+
+    Returns:
+        ABTest: The newly created A/B test record.
     """
     max_id = db.query(ABTestingDB.test_id).order_by(ABTestingDB.test_id.desc()).first()
     next_id = max_id[0] + 1 if max_id else 1
@@ -274,26 +283,28 @@ async def create_ab_test(ab_test: ABTestCreate, db: Session = Depends(get_db)):
         landing_page_id=ab_test.landing_page_id,
         product_id=ab_test.product_id,
     )
-    
+
     db.add(new_ab_test)
     db.commit()
     db.refresh(new_ab_test)
-    
+
     return new_ab_test
 
-
 @app.put("/abtests/{test_id}", response_model=ABTest)
-async def update_ab_test(test_id: int, ab_test: ABTestUpdate, db: Session = Depends(get_db)):
+async def update_ab_test(test_id: int, ab_test: ABTestUpdate, db: Session = Depends(get_db)) -> ABTest:
     """
     Update an existing A/B test record.
-    
+
     Args:
         test_id (int): The ID of the A/B test to update.
         ab_test (ABTestUpdate): Schema with updated values.
         db (Session): Database session dependency.
-    
+
     Returns:
         ABTest: The updated A/B test record.
+
+    Raises:
+        HTTPException: If the A/B test is not found.
     """
     existing_ab_test = db.query(ABTestingDB).filter(ABTestingDB.test_id == test_id).first()
 
@@ -316,14 +327,13 @@ async def update_ab_test(test_id: int, ab_test: ABTestUpdate, db: Session = Depe
 
     return existing_ab_test
 
-
 @app.delete("/abtests/{test_id}")
-async def delete_ab_test(test_id: int, db: Session = Depends(get_db)):
+async def delete_ab_test(test_id: int, db: Session = Depends(get_db)) -> Dict[str, str]:
     """
     Delete an AB test by its ID.
 
     Args:
-        abtest_id (int): ID of the AB test to delete.
+        test_id (int): ID of the AB test to delete.
         db (Session): Database session dependency.
 
     Returns:
@@ -341,7 +351,7 @@ async def delete_ab_test(test_id: int, db: Session = Depends(get_db)):
     return {"message": "AB Test deleted successfully"}
 
 @app.get("/abtests/", response_model=List[ABTest])
-async def get_all_ab_tests(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+async def get_all_ab_tests(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)) -> List[ABTest]:
     """
     Retrieve a list of all AB tests with optional pagination.
 
@@ -356,15 +366,14 @@ async def get_all_ab_tests(skip: int = 0, limit: int = 100, db: Session = Depend
     ab_tests = db.query(ABTestingDB).offset(skip).limit(limit).all()
     return ab_tests
 
-
 # --- Result Endpoints ---
 @app.get("/results/{results_id}", response_model=Result)
-async def get_result(results_id: int, db: Session = Depends(get_db)):
+async def get_result(results_id: int, db: Session = Depends(get_db)) -> Result:
     """
     Retrieve a specific result by its ID.
 
     Args:
-        result_id (int): ID of the result to retrieve.
+        results_id (int): ID of the result to retrieve.
         db (Session): Database session dependency.
 
     Returns:
@@ -379,9 +388,16 @@ async def get_result(results_id: int, db: Session = Depends(get_db)):
     return result
 
 @app.post("/results/", response_model=Result)
-async def create_result(result: ResultCreate, db: Session = Depends(get_db)):
+async def create_result(result: ResultCreate, db: Session = Depends(get_db)) -> Result:
     """
     Create a new result record for an A/B test, manually assigning an ID.
+
+    Args:
+        result (ResultCreate): The details of the result to create.
+        db (Session): Database session dependency.
+
+    Returns:
+        Result: The newly created result record.
     """
     max_id = db.query(ResultDB.results_id).order_by(ResultDB.results_id.desc()).first()
     next_id = max_id[0] + 1 if max_id else 1
@@ -393,28 +409,31 @@ async def create_result(result: ResultCreate, db: Session = Depends(get_db)):
         bounce_rate=result.bounce_rate,
         test_id=result.test_id,
     )
-    
+
     db.add(new_result)
     db.commit()
     db.refresh(new_result)
-    
+
     return new_result
 
 @app.put("/results/{result_id}", response_model=Result)
-async def update_result(result_id: int, result: ResultUpdate, db: Session = Depends(get_db)):
+async def update_result(result_id: int, result: ResultUpdate, db: Session = Depends(get_db)) -> Result:
     """
     Update an existing result record for an A/B test.
-    
+
     Args:
         result_id (int): The ID of the result record to update.
         result (ResultUpdate): Schema with updated result values.
         db (Session): Database session dependency.
-    
+
     Returns:
         Result: The updated result record.
+
+    Raises:
+        HTTPException: If the result is not found.
     """
     existing_result = db.query(ResultDB).filter(ResultDB.results_id == result_id).first()
-    
+
     if not existing_result:
         raise HTTPException(status_code=404, detail="Result not found")
 
@@ -426,19 +445,19 @@ async def update_result(result_id: int, result: ResultUpdate, db: Session = Depe
         existing_result.bounce_rate = result.bounce_rate
     if result.test_id is not None:
         existing_result.test_id = result.test_id
-    
+
     db.commit()
     db.refresh(existing_result)
-    
+
     return existing_result
 
 @app.delete("/results/{results_id}")
-async def delete_result(results_id: int, db: Session = Depends(get_db)):
+async def delete_result(results_id: int, db: Session = Depends(get_db)) -> Dict[str, str]:
     """
     Delete a result by its ID.
 
     Args:
-        result_id (int): ID of the result to delete.
+        results_id (int): ID of the result to delete.
         db (Session): Database session dependency.
 
     Returns:
@@ -455,8 +474,9 @@ async def delete_result(results_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"message": "Result deleted successfully"}
 
+
 @app.get("/results/", response_model=List[Result])
-async def get_all_results(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+async def get_all_results(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)) -> List[Result]:
     """
     Retrieve a list of all results in the database with pagination.
 
