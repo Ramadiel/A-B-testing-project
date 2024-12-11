@@ -1,202 +1,46 @@
 import streamlit as st
 import requests
 import os
+import random
+import pandas as pd
+import plotly.express as px
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 # Get the FastAPI URL from environment variables
+# This allows the API URL to be dynamically configured for different environments.
 api_url = os.getenv("API_URL", "http://localhost:8000")
 
-# Set up the Streamlit app title
-st.title("Customer Management System")
+# Initialize session state variables
+# These variables store data across Streamlit reruns.
+if "product_data" not in st.session_state:
+    st.session_state.product_data = {}
 
-# -----------------------------------------------------
-# Utility Functions (API Interactions)
-# -----------------------------------------------------
+if "show_program_buttons" not in st.session_state:
+    st.session_state.show_program_buttons = False
 
-def get_customer_by_id(customer_id: int) -> dict:
+# Utility Functions
+
+def create_product(product_name, category, description, logo_url, release_date):
     """
-    Fetch customer details by their ID.
-    
-    Parameters:
-    - customer_id (int): The ID of the customer to retrieve.
+    Create a new product by sending a POST request to the FastAPI endpoint.
+
+    Args:
+        product_name (str): Name of the product.
+        category (str): Product category.
+        description (str): Description of the product.
+        logo_url (str): URL of the product logo.
+        release_date (str): Release date of the product.
 
     Returns:
-    - dict: The customer's details if found, or None with an error message.
-    """
-    response = requests.get(f"{api_url}/customers/{customer_id}")
-    if response.status_code == 200:
-        return response.json()
-    else:
-        st.error("Customer not found.")
-        return None
-
-def create_customer(name: str, email: str) -> dict:
-    """
-    Create a new customer record.
-    
-    Parameters:
-    - name (str): customer's first name.
-    - email (str): customer's email address.
-
-    Returns:
-    - dict: The created customer's details or an error message if failed.
-    """
-    payload = {
-        "name": name,
-        "email": email,
-    }
-    response = requests.post(f"{api_url}/customers/", json=payload)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        st.error("Failed to create customer.")
-        return None
-
-def update_email(customer_id: int, new_email: str) -> dict:
-    """
-    Update an existing customer's email by sending the full customer payload.
-    
-    Parameters:
-    - customer_id (int): The ID of the customer whose email will be updated.
-    - new_email (str): The new email amount.
-
-    Returns:
-    - dict: Updated customer details if successful or an error message if failed.
-    """
-    # Step 1: Get the current details of the customer
-    customer = get_customer_by_id(customer_id)
-    if not customer:
-        st.error("customer not found, cannot update email.")
-        return None
-    
-    # Step 2: Prepare the full payload with the updated email
-    payload = {
-        "name": customer["name"],
-        "email": new_email  # Update the email here
-    }
-
-    # Step 3: Send PUT request with the complete payload
-    response = requests.put(f"{api_url}/customers/{customer_id}", json=payload)
-    
-    if response.status_code == 200:
-        return response.json()
-    else:
-        st.error("Failed to update email.")
-        return None
-
-
-    
-def delete_customer(customer_id: int) -> dict:
-    """
-    Delete an customer record by ID.
-    
-    Parameters:
-    - customer_id (int): The ID of the customer to delete.
-
-    Returns:
-    - dict: Success message if deleted or an error message if failed.
-    """
-    response = requests.delete(f"{api_url}/customers/{customer_id}")
-    if response.status_code == 200:
-        return {"message": "customer deleted successfully."}
-    else:
-        st.error("Failed to delete customer.")
-        return None
-
-# -----------------------------------------------------
-# UI Components
-# -----------------------------------------------------
-
-# Section: Get an customer by ID
-st.subheader("Get customer by ID")
-customer_id_search = st.number_input("customer ID for Search", min_value=1, step=1)
-if st.button("Get customer"):
-    customer = get_customer_by_id(customer_id_search)
-    if customer:
-        st.write("customer Details:")
-        st.json(customer)
-
-# Section: Add New customer
-st.subheader("Add New customer")
-with st.form("customer_form"):
-    name = st.text_input("Name")
-    email = st.text_input("Email")
-    submitted = st.form_submit_button("Create customer")
-
-    if submitted:
-        customer = create_customer(name, email)
-        if customer:
-            st.success("customer created successfully!")
-            st.write(customer)
-
-# Section: Update customer email
-st.subheader("Update customer email")
-customer_id = st.number_input("customer ID", min_value=1, step=1)
-new_email = st.text_input("New email")
-if st.button("Update email"):
-    updated_customer = update_email(customer_id, new_email)
-    if updated_customer:
-        st.success("email updated successfully!")
-        st.write(updated_customer)
-
-# Section: Remove customer
-st.subheader("Remove customer")
-customer_id_delete = st.number_input("customer ID for Deletion", min_value=1, step=1)
-if st.button("Delete customer"):
-    result = delete_customer(customer_id_delete)
-    if result:
-        st.success(result["message"])
-
-import streamlit as st
-import requests
-import os
-
-# Get the FastAPI URL from environment variables
-api_url = os.getenv("API_URL", "http://localhost:8000")
-
-# Set up the Streamlit app title
-st.title("product Management System")
-
-# -----------------------------------------------------
-# Utility Functions (API Interactions)
-# -----------------------------------------------------
-
-def get_product_by_id(product_id: int) -> dict:
-    """
-    Fetch product details by their ID.
-    
-    Parameters:
-    - product_id (int): The ID of the product to retrieve.
-
-    Returns:
-    - dict: The product's details if found, or None with an error message.
-    """
-    response = requests.get(f"{api_url}/products/{product_id}")
-    if response.status_code == 200:
-        return response.json()
-    else:
-        st.error("product not found.")
-        return None
-
-def create_product(product_name: str, category: str, description: str, logo_url: str, release_date: str) -> dict:
-    """
-    Create a new product record.
-    
-    Parameters:
-    - product_name (str): product's name.
-    - category (str): product's category.
-    - description (str): product's description.
-    - logo_url (str): product's logo url.
-    - release_date (str): product's release date.
-
-    Returns:
-    - dict: The created product's details or an error message if failed.
+        dict: Response from the FastAPI endpoint if successful, otherwise None.
     """
     payload = {
         "product_name": product_name,
         "category": category,
         "description": description,
         "logo_url": logo_url,
-        "release_date": release_date
+        "release_date": release_date,
     }
     response = requests.post(f"{api_url}/products/", json=payload)
     if response.status_code == 200:
@@ -205,146 +49,218 @@ def create_product(product_name: str, category: str, description: str, logo_url:
         st.error("Failed to create product.")
         return None
 
-def update_description(product_id: int, new_description: str) -> dict:
+def get_product_by_id(product_id: int) -> dict:
     """
-    Update an existing product's description by sending the full product payload.
-    
-    Parameters:
-    - product_id (int): The ID of the product whose description will be updated.
-    - new_description (str): The new description amount.
+    Fetch product details by product ID using a GET request.
+
+    Args:
+        product_id (int): ID of the product.
 
     Returns:
-    - dict: Updated product details if successful or an error message if failed.
+        dict: Product details if found, otherwise None.
     """
-    # Step 1: Get the current details of the product
-    product = get_product_by_id(product_id)
-    if not product:
-        st.error("product not found, cannot update description.")
-        return None
-    
-    # Step 2: Prepare the full payload with the updated description
-    payload = {
-        "product_name":product["product_name"],
-        "category":product["category"],
-        "description":new_description,
-        "logo_url": product["logo_url"],
-        "release_date":product["release_date"]
-    }
-
-    # Step 3: Send PUT request with the complete payload
-    response = requests.put(f"{api_url}/products/{product_id}", json=payload)
-    
+    response = requests.get(f"{api_url}/products/{product_id}")
     if response.status_code == 200:
         return response.json()
     else:
-        st.error("Failed to update description.")
+        st.error("Product not found.")
         return None
 
-
-    
-def delete_product(product_id: int) -> dict:
+def fetch_results(test_id: int):
     """
-    Delete an product record by ID.
-    
-    Parameters:
-    - product_id (int): The ID of the product to delete.
+    Fetch results for a specific test ID using a GET request.
+
+    Args:
+        test_id (int): Test ID to fetch results for.
 
     Returns:
-    - dict: Success message if deleted or an error message if failed.
+        list: List of results if successful, otherwise an empty list.
     """
-    response = requests.delete(f"{api_url}/products/{product_id}")
+    response = requests.get(f"{api_url}/results/?test_id={test_id}")
     if response.status_code == 200:
-        return {"message": "product deleted successfully."}
+        return response.json()
     else:
-        st.error("Failed to delete product.")
-        return None
+        st.error("Failed to fetch results.")
+        return []
 
-# -----------------------------------------------------
-# UI Components
-# -----------------------------------------------------
+def redirect_to_page(page_name: str, product_id: int):
+    """
+    Redirect the user to another page using HTML meta refresh.
 
-# Section: Get an product by ID
-st.subheader("Get product by ID")
-product_id_search = st.number_input("product ID for Search", min_value=1, step=1)
-if st.button("Get product"):
-    product = get_product_by_id(product_id_search)
-    if product:
-        st.write("product Details:")
-        st.json(product)
-
-# Section: Add New product
-st.subheader("Add New product")
-with st.form("product_form"):
-    product_name = st.text_input("product name")
-    category = st.text_input("category")
-    description = st.text_input("description")
-    logo_url = st.text_input("logo url")
-    release_date = st.text_input("release date")
-    
-    submitted = st.form_submit_button("Create product")
-
-    if submitted:
-        product = create_product(product_name, category, description, logo_url, release_date)
-        if product:
-            st.success("product created successfully!")
-            st.write(product)
-
-# Section: Update product description
-st.subheader("Update product description")
-product_id = st.number_input("product ID", min_value=1, step=1)
-new_description = st.text_input("New description")
-if st.button("Update description"):
-    updated_product = update_description(product_id, new_description)
-    if updated_product:
-        st.success("description updated successfully!")
-        st.write(updated_product)
-
-# Section: Remove product
-st.subheader("Remove product")
-product_id_delete = st.number_input("product ID for Deletion", min_value=1, step=1)
-if st.button("Delete product"):
-    result = delete_product(product_id_delete)
-    if result:
-        st.success(result["message"])
-
-st.markdown("---")  # Horizontal line for separation
-
-# Left-aligned headline
-
-def redirect_to_page(page_name: str):
-    """Function to redirect to a specific page URL."""
-    page_url = f"http://localhost:8501/{page_name.replace(' ', '_')}"
+    Args:
+        page_name (str): Target page name.
+        product_id (int): ID of the product to include in the URL.
+    """
+    page_url = f"http://localhost:8501/{page_name}?product_id={product_id}"
     st.markdown(f'<meta http-equiv="refresh" content="0;url={page_url}">', unsafe_allow_html=True)
 
-# -----------------------------------------------------
-# Main App Logic
-# -----------------------------------------------------
+def render_visualizations(page_name, test_id):
+    """
+    Render visualizations for a specific test ID.
 
-# Initialize session state variables
-if "show_buttons" not in st.session_state:
-    st.session_state.show_buttons = False
+    Args:
+        page_name (str): Name of the page for which to render visualizations.
+        test_id (int): Test ID to fetch and visualize results for.
+    """
+    st.subheader(f"{page_name.capitalize()} Visualizations")
 
-# Left-aligned headline for page creation
-st.markdown("### Page Creation")  # Use H3 for a smaller headline
+    results = fetch_results(test_id)
 
-# Create button to reveal page selection
-if st.button("Create", use_container_width=True):
-    st.session_state.show_buttons = True  # Show buttons when "Create" is clicked
+    if results:
+        df = pd.DataFrame(results)
 
-# Display buttons to navigate to pages if "Create" was clicked
-if st.session_state.get("show_buttons"):
-    st.subheader("Select a Program Page")
+        # Seaborn visualizations for Exploratory Data Analysis (EDA)
+        fig1, ax1 = plt.subplots()
+        sns.countplot(data=df, x="click_through_rate", ax=ax1)
+        ax1.set_title("Click Through Rate Distribution")
+        ax1.tick_params(axis='x', rotation=45)
+        ax1.tick_params(axis='y', which='major', labelsize=8)
+        
+        fig2, ax2 = plt.subplots()
+        sns.boxplot(data=df, x="test_id", y="conversion_rate", ax=ax2)
+        ax2.set_title("Conversion Rate by Test Group")
+        ax2.tick_params(axis='y', which='major', labelsize=8)
 
-    # Create buttons for each dummy page
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        if st.button("Go to Dummy 1"):
-            redirect_to_page("Dummy_1")  # Redirect to Dummy 1 page
+        # Plotly histogram visualizations for interactivity
+        fig_clicks = px.histogram(df, x="click_through_rate", title="Click Through Rate Distribution")
+        fig_conversions = px.histogram(df, x="conversion_rate", title="Conversion Rate Distribution")
+        fig_bounce = px.histogram(df, x="bounce_rate", title="Bounce Rate Distribution")
 
-    with col2:
-        if st.button("Go to Dummy 2"):
-            redirect_to_page("Dummy_2")  # Redirect to Dummy 2 page
+        # Layout in two rows
+        col1, col2 = st.columns(2)  # First row
+        with col1:
+            st.pyplot(fig1)  # Seaborn plot
+        with col2:
+            st.pyplot(fig2)  # Seaborn plot
+        
+        col3, col4, col5 = st.columns(3)  # Second row (Plotly interactive charts)
+        with col3:
+            st.plotly_chart(fig_clicks, key=f"clicks_{test_id}")
+        with col4:
+            st.plotly_chart(fig_conversions, key=f"conversions_{test_id}")
+        with col5:
+            st.plotly_chart(fig_bounce, key=f"bounce_{test_id}")
+    else:
+        st.warning("No results available for this page.")
 
-    with col3:
-        if st.button("Go to Dummy 3"):
-            redirect_to_page("Dummy_3")  # Redirect to Dummy 3 page
+# Function to generate and send random results to FastAPI
+def generate_and_create_results(test_id, num_results=50):
+    """
+    Generate and send random results to the FastAPI backend.
+
+    Args:
+        test_id (int): Test ID to associate the results with.
+        num_results (int): Number of results to generate. Default is 50.
+    """
+    for _ in range(num_results):
+        if test_id == 1:  # Dummy1
+            result_data = {
+                "click_through_rate": round(random.uniform(0.1, 0.3), 2),  # Range 0.1 to 0.3
+                "conversion_rate": round(random.uniform(0.05, 0.15), 2),  # Range 0.05 to 0.15
+                "bounce_rate": round(random.uniform(0.2, 0.5), 2),        # Range 0.2 to 0.5
+                "test_id": test_id
+            }
+        elif test_id == 2:  # Dummy2
+            result_data = {
+                "click_through_rate": round(random.uniform(0.3, 0.5), 2),  # Range 0.3 to 0.5
+                "conversion_rate": round(random.uniform(0.1, 0.2), 2),    # Range 0.1 to 0.2
+                "bounce_rate": round(random.uniform(0.4, 0.6), 2),        # Range 0.4 to 0.6
+                "test_id": test_id
+            }
+        elif test_id == 3:  # Dummy3
+            result_data = {
+                "click_through_rate": round(random.uniform(0.15, 0.35), 2), # Range 0.15 to 0.35
+                "conversion_rate": round(random.uniform(0.05, 0.1), 2),    # Range 0.05 to 0.1
+                "bounce_rate": round(random.uniform(0.3, 0.7), 2),         # Range 0.3 to 0.7
+                "test_id": test_id
+            }
+        response = requests.post(f"{api_url}/results/", json=result_data)
+
+# Populate data for a page when button is pressed
+def populate_data(page_name):
+    """
+    Populate the backend with data for a specific page.
+
+    Args:
+        page_name (str): Page name (e.g., Dummy1, Dummy2, Dummy3).
+    """
+    page_map = {"Dummy1": 1, "Dummy2": 2, "Dummy3": 3}
+    if page_name in page_map:
+        test_id = page_map[page_name]
+        generate_and_create_results(test_id)
+    else:
+        st.error("Invalid page name")
+
+# Check query parameters
+query_params = st.experimental_get_query_params()
+current_page = query_params.get("page", ["main"])[0]
+
+if current_page == "main":
+    # Main App Logic
+    st.title("Customer and Product Management System")
+
+    st.subheader("Input Details")
+    product_name = st.text_input("Product Name")
+    product_category = st.text_input("Product Category")
+    product_description = st.text_input("Product Description")
+    product_logo_url = st.text_input("Product Logo URL")
+    product_release_date = st.text_input("Product Release Date")
+
+    if st.button("Create"):
+        if product_name and product_category and product_description and product_logo_url and product_release_date:
+            product = create_product(product_name, product_category, product_description, product_logo_url, product_release_date)
+            if product:
+                st.session_state.product_data = product
+                st.session_state.show_program_buttons = True
+                st.success("Product created successfully!")
+
+                # Populate data for all three dummy pages immediately
+                populate_data("Dummy1")
+                populate_data("Dummy2")
+                populate_data("Dummy3")
+            else:
+                st.error("Product creation failed.")
+        else:
+            st.warning("Please fill in all product details.")
+
+    if st.session_state.show_program_buttons:
+        st.subheader("Select a Program Page")
+        cols = st.columns(3)
+        with cols[0]:
+            if st.button("Go to Dummy 1"):
+                redirect_to_page("Dummy1", st.session_state.product_data["product_id"])
+        with cols[1]:
+            if st.button("Go to Dummy 2"):
+                redirect_to_page("Dummy2", st.session_state.product_data["product_id"])
+        with cols[2]:
+            if st.button("Go to Dummy 3"):
+                redirect_to_page("Dummy3", st.session_state.product_data["product_id"])
+
+    # Show visualizations directly on the main page after creating the product
+    if st.session_state.show_program_buttons:
+        st.subheader("Visualizations")
+        test_ids = [1, 2, 3]
+        for test_id in test_ids:
+            render_visualizations(f"Dummy{test_id}", test_id)
+
+else:
+    product_id = int(query_params.get("product_id", [0])[0])
+    product_data = get_product_by_id(product_id)
+
+    if product_data:
+        st.title(f"{current_page.capitalize()} Page")
+        st.write(f"Product Name: {product_data['product_name']}")
+        st.write(f"Category: {product_data['category']}")
+        st.write(f"Description: {product_data['description']}")
+        st.image(product_data['logo_url'])
+        st.write(f"Release Date: {product_data['release_date']}")
+
+        # Render visualizations based on page and test ID
+        if current_page == "Dummy1":
+            render_visualizations("Dummy1", test_id=1)
+        elif current_page == "Dummy2":
+            render_visualizations("Dummy2", test_id=2)
+        elif current_page == "Dummy3":
+            render_visualizations("Dummy3", test_id=3)
+    else:
+        st.error("No product data available. Please return to the main page and create a product.")
