@@ -47,7 +47,7 @@ After running `docker-compose up --build`, you can access each component of the 
 - **MKDOCS** : [http://127.0.0.1:8000/]
     Documentations for the project containing valuable information about the code and ext.
   
-
+- **Documentation** : [https://ramadiel.github.io/A-B-testing-project/]
 > Note: Ensure Docker is running, and all environment variables in `.env` are correctly configured before accessing these URLs.
 
 ## Documentation
